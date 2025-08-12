@@ -1,12 +1,3 @@
---[[
-    		Compkiller Interface
-
-    Author: 4lpaca
-    License: MIT
-    Github: https://github.com/4lpaca-pin/CompKiller
---]]
-
---- Export Types ---
 
 export type cloneref = (target: Instance) -> Instance;
 
@@ -7138,7 +7129,7 @@ function Compkiller.new(Config : Window)
 					WindowArgs.Notify.new({
 						Title = "Configs",
 						Icon = Compkiller:_GetIcon(Config.Logo),
-						Content = "Create config \""..TextBox.Text.."\""
+						Content = "创建配置: \""..TextBox.Text.."\""
 					})
 
 					Configuration.Config:WriteConfig({
@@ -7174,7 +7165,7 @@ function Compkiller.new(Config : Window)
 						WindowArgs.Notify.new({
 							Title = "Configs",
 							Icon = Compkiller:_GetIcon(Config.Logo),
-							Content = "Load config \""..v.Name.."\""
+							Content = "加载配置: \""..v.Name.."\""
 						})
 
 						Configuration.Config:LoadConfig(v.Name);
@@ -7184,7 +7175,7 @@ function Compkiller.new(Config : Window)
 						WindowArgs.Notify.new({
 							Title = "Configs",
 							Icon = Compkiller:_GetIcon(Config.Logo),
-							Content = "Save config \""..v.Info.Author.."\""
+							Content = "配置已保存: \""..v.Info.Author.."\""
 						})
 
 						local NewAuthorText = ((v.Info.Author == WindowArgs.Username) and  WindowArgs.Username) or v.Info.Author .. " [EDIT]";
@@ -7201,7 +7192,7 @@ function Compkiller.new(Config : Window)
 						WindowArgs.Notify.new({
 							Title = "Configs",
 							Icon = Compkiller:_GetIcon(Config.Logo),
-							Content = "Delete config \""..v.Name.."\""
+							Content = "配置已删除: \""..v.Name.."\""
 						})
 
 						Configuration.Config:DeleteConfig(v.Name)
