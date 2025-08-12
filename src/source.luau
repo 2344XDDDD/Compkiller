@@ -6209,7 +6209,7 @@ function Compkiller.new(Config : Window)
 		SectionText.Size = UDim2.new(0, 200, 0, 25)
 		SectionText.ZIndex = 10
 		SectionText.Font = Enum.Font.GothamMedium
-		SectionText.Text = "Config List"
+		SectionText.Text = "配置列表"
 		SectionText.TextColor3 = Compkiller.Colors.SwitchColor
 		SectionText.TextSize = 14.000
 		SectionText.TextTransparency = 0.500
