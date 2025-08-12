@@ -1,4 +1,10 @@
+--[[
+    		Compkiller Interface
 
+    Author: 4lpaca
+    License: MIT
+    Github: https://github.com/4lpaca-pin/CompKiller
+--]]
 
 --- Export Types ---
 
@@ -6212,7 +6218,7 @@ function Compkiller.new(Config : Window)
 		SectionText.Size = UDim2.new(0, 200, 0, 25)
 		SectionText.ZIndex = 10
 		SectionText.Font = Enum.Font.GothamMedium
-		SectionText.Text = "配置列表"
+		SectionText.Text = "Config List"
 		SectionText.TextColor3 = Compkiller.Colors.SwitchColor
 		SectionText.TextSize = 14.000
 		SectionText.TextTransparency = 0.500
@@ -6302,7 +6308,7 @@ function Compkiller.new(Config : Window)
 		SectionText_2.Size = UDim2.new(0, 200, 0, 25)
 		SectionText_2.ZIndex = 10
 		SectionText_2.Font = Enum.Font.GothamMedium
-		SectionText_2.Text = "添加配置"
+		SectionText_2.Text = "Add Config"
 		SectionText_2.TextColor3 = Compkiller.Colors.SwitchColor
 		SectionText_2.TextSize = 14.000
 		SectionText_2.TextTransparency = 0.500
@@ -6362,7 +6368,7 @@ function Compkiller.new(Config : Window)
 		TextBox.ClearTextOnFocus = false
 		TextBox.Font = Enum.Font.GothamMedium
 		TextBox.PlaceholderColor3 = Color3.fromRGB(150, 150, 150)
-		TextBox.PlaceholderText = "配置名称..."
+		TextBox.PlaceholderText = "Config Name..."
 		TextBox.Text = ""
 		TextBox.TextColor3 = Compkiller.Colors.SwitchColor
 		TextBox.TextSize = 12.000
@@ -6435,7 +6441,7 @@ function Compkiller.new(Config : Window)
 		TextLabel.Size = UDim2.new(1, 0, 1, 0)
 		TextLabel.ZIndex = 10
 		TextLabel.Font = Enum.Font.GothamMedium
-		TextLabel.Text = "添加配置"
+		TextLabel.Text = "Add Config"
 		TextLabel.TextColor3 = Compkiller.Colors.SwitchColor
 		TextLabel.TextSize = 12.000
 		TextLabel.TextStrokeTransparency = 0.900
@@ -7132,7 +7138,7 @@ function Compkiller.new(Config : Window)
 					WindowArgs.Notify.new({
 						Title = "Configs",
 						Icon = Compkiller:_GetIcon(Config.Logo),
-						Content = "创建配置成功-配置名: \""..TextBox.Text.."\""
+						Content = "Create config \""..TextBox.Text.."\""
 					})
 
 					Configuration.Config:WriteConfig({
@@ -7168,7 +7174,7 @@ function Compkiller.new(Config : Window)
 						WindowArgs.Notify.new({
 							Title = "Configs",
 							Icon = Compkiller:_GetIcon(Config.Logo),
-							Content = "加载配置成功 \""..v.Name.."\""
+							Content = "Load config \""..v.Name.."\""
 						})
 
 						Configuration.Config:LoadConfig(v.Name);
@@ -7178,7 +7184,7 @@ function Compkiller.new(Config : Window)
 						WindowArgs.Notify.new({
 							Title = "Configs",
 							Icon = Compkiller:_GetIcon(Config.Logo),
-							Content = "保存配置成功 \""..v.Info.Author.."\""
+							Content = "Save config \""..v.Info.Author.."\""
 						})
 
 						local NewAuthorText = ((v.Info.Author == WindowArgs.Username) and  WindowArgs.Username) or v.Info.Author .. " [EDIT]";
@@ -7195,7 +7201,7 @@ function Compkiller.new(Config : Window)
 						WindowArgs.Notify.new({
 							Title = "Configs",
 							Icon = Compkiller:_GetIcon(Config.Logo),
-							Content = "删除成功 \""..v.Name.."\""
+							Content = "Delete config \""..v.Name.."\""
 						})
 
 						Configuration.Config:DeleteConfig(v.Name)
@@ -8557,11 +8563,497 @@ function Compkiller:ConfigManager(ConfigManager: ConfigManager) : ConfigFunction
 			notify.new({
 				Title = "Configs",
 				Icon = Compkiller:_GetIcon('settings'),
-				Content = "创建配置成功-配置名: \""..Config.Name.."\""
+				Content = "Create config \""..Config.Name.."\""
 			})
 		end
 
 		writefile(Compkiller:_Path(Args.Directory , Config.Name) , HttpService:JSONEncode(Flags));
 	end;
 
-	function Args:Load
+	function Args:LoadConfigFromString(str: string)
+		local decoded = HttpService:JSONDecode(str);
+
+		local Flags = Compkiller:GetConfig("KV");
+
+		for i,v in next , decoded do
+			if v and v.Flag then
+
+				local Value = Flags[v.Flag];
+
+				if Value then
+
+					if v.Value.Type == "NormalElement" then
+						Value.Functions:SetValue(v.Value.Value);
+
+					elseif v.Value.Type == "ColorPicker" then
+
+						local Color = Color3.new(v.Value.Color3.R,v.Value.Color3.G,v.Value.Color3.B);
+
+						local Transparency = v.Value.Transparency;
+
+						Value.Functions:SetValue(Color , Transparency);
+					end;
+				end;
+			end
+		end;
+	end;
+
+	function Args:GetCurrentConfig()
+		return Compkiller:GetConfig("MK")
+	end;
+
+	function Args:ReadInfo(ConfigName: string)
+		local _path = Compkiller:_Path(Args.Directory , ConfigName);
+
+		if isfile(_path) then
+			local info = readfile(_path);
+
+			local decoded = HttpService:JSONDecode(info);
+
+			return decoded.__INFORMATION;
+		end;
+
+		return false;
+	end;
+
+	function Args:GetConfigs()
+		local names = {};
+
+		for i,v in next , listfiles(Args.Directory) do
+			local Name = string.sub(v , #Args.Directory + 2);
+
+			table.insert(names , Name);
+		end;
+
+		return names;
+	end;
+
+	function Args:GetFullConfigs()
+		local names = {};
+
+		for i,v in next , listfiles(Args.Directory) do
+			local Name = string.sub(v , #Args.Directory + 2);
+			local Info = Args:ReadInfo(Name);
+
+			table.insert(names , {
+				Name = Name,
+				Info = Info,
+			});
+		end;
+
+		return names;
+	end;
+
+	function Args:DeleteConfig(ConfigName)
+		local _path = Compkiller:_Path(Args.Directory,ConfigName);
+
+		if Args.EnableNotify then
+			notify.new({
+				Title = "Configs",
+				Icon = Compkiller:_GetIcon('settings'),
+				Content = "Delete config \""..ConfigName.."\""
+			})
+		end
+
+		if isfile(_path) then
+			delfile(_path);
+		end;
+	end;
+
+	function Args:GetConfigCount()
+		return #listfiles(Args.Directory);
+	end;
+
+	function Args:LoadConfig(ConfigName: string)
+		local _path = Compkiller:_Path(Args.Directory,ConfigName);
+
+		if isfile(_path) then
+			local info = readfile(_path);
+
+			local decoded = HttpService:JSONDecode(info);
+
+			local Flags = Compkiller:GetConfig("KV");
+
+			if Args.EnableNotify then
+				notify.new({
+					Title = "Configs",
+					Icon = Compkiller:_GetIcon('settings'),
+					Content = "Load config \""..ConfigName.."\""
+				})
+			end
+
+			for i,v in next , decoded do
+				if v and v.Flag then
+
+					local Value = Flags[v.Flag];
+
+					if Value then
+
+						if v.Value.Type == "NormalElement" then
+							Value.Functions:SetValue(v.Value.Value);
+
+						elseif v.Value.Type == "ColorPicker" then
+
+							local Color = Color3.new(v.Value.Color3.R,v.Value.Color3.G,v.Value.Color3.B);
+
+							local Transparency = v.Value.Transparency;
+
+							Value.Functions:SetValue(Color , Transparency);
+						end;
+					end;
+				end
+			end;
+		end;
+	end;
+
+	return Args;
+end;
+
+function Compkiller:Loader(IconId,Duration)
+	local CompKiller = Instance.new("ScreenGui")
+
+	CompKiller.Name = Compkiller:_RandomString()
+	CompKiller.Parent = CoreGui
+	CompKiller.Enabled = true
+	CompKiller.ResetOnSpawn = false
+	CompKiller.IgnoreGuiInset = true
+	CompKiller.ZIndexBehavior = Enum.ZIndexBehavior.Global
+
+	local Loader = Instance.new("Frame")
+	local Icon = Instance.new("ImageLabel")
+	local Vignette = Instance.new("ImageLabel")
+
+	Loader.Name = Compkiller:_RandomString()
+	Loader.Parent = CompKiller
+	Loader.AnchorPoint = Vector2.new(0.5, 0.5)
+	Loader.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+	Loader.BackgroundTransparency = 1
+	Loader.BorderColor3 = Color3.fromRGB(0, 0, 0)
+	Loader.BorderSizePixel = 0
+	Loader.Position = UDim2.new(0.5, 0, 0.5, 0)
+	Loader.Size = UDim2.new(1, 0, 1, 0)
+
+	Icon.Name = Compkiller:_RandomString()
+	Icon.Parent = Loader
+	Icon.AnchorPoint = Vector2.new(0.5, 0.5)
+	Icon.BackgroundTransparency = 1.000
+	Icon.BorderColor3 = Color3.fromRGB(0, 0, 0)
+	Icon.BorderSizePixel = 0
+	Icon.Position = UDim2.new(0.5, 0, 0.5, 0)
+	Icon.Size = UDim2.new(0, 750, 0, 750)
+	Icon.ZIndex = 100
+	Icon.Image = IconId or "rbxassetid://120245531583106"
+	Icon.ImageTransparency = 1
+
+	Vignette.Name = Compkiller:_RandomString()
+	Vignette.Parent = Loader
+	Vignette.BackgroundTransparency = 1.000
+	Vignette.BorderColor3 = Color3.fromRGB(27, 42, 53)
+	Vignette.BorderSizePixel = 0
+	Vignette.Size = UDim2.new(1, 0, 1, 0)
+	Vignette.Image = "rbxassetid://18720640102"
+	Vignette.ImageColor3 = Compkiller.Colors.Highlight
+	Vignette.ImageTransparency = 1
+	Vignette.AnchorPoint = Vector2.new(0.5,0.5)
+	Vignette.Position = UDim2.fromScale(0.5,0.5)
+
+	Compkiller:_Animation(Loader,TweenInfo.new(0.55,Enum.EasingStyle.Quint),{
+		BackgroundTransparency = 0.5
+	});
+
+	local Event = Instance.new('BindableEvent');
+
+	task.delay(0.5,function()
+		Compkiller:_Animation(Icon,TweenInfo.new(0.75,Enum.EasingStyle.Quint),{
+			ImageTransparency = 0.01,
+			Size = UDim2.new(0, 200, 0, 200)
+		});
+
+		task.delay(0.25,function()
+			Compkiller:_Animation(Vignette,TweenInfo.new(5),{
+				ImageTransparency = 0.2
+			});
+
+			task.wait(Duration or 4.5)
+
+			Compkiller:_Animation(Vignette,TweenInfo.new(3,Enum.EasingStyle.Quint,Enum.EasingDirection.InOut),{
+				Size = UDim2.new(2, 0, 2, 0)
+			});
+
+			Compkiller:_Animation(Icon,TweenInfo.new(0.75,Enum.EasingStyle.Quint,Enum.EasingDirection.InOut),{
+				ImageTransparency = 1,
+			});
+
+			Compkiller:_Animation(Loader,TweenInfo.new(1.5,Enum.EasingStyle.Quint,Enum.EasingDirection.InOut),{
+				BackgroundTransparency = 1
+			});
+
+			task.delay(0.1,function()
+				Compkiller:_Animation(Vignette,TweenInfo.new(1,Enum.EasingStyle.Quint,Enum.EasingDirection.InOut),{
+					ImageTransparency = 1
+				});
+
+				task.wait(0.2)
+
+				task.delay(3,function()
+					CompKiller:Destroy();
+				end)
+			end)
+
+			task.delay(0.6,function()
+				Event:Fire();
+			end)
+		end)
+	end);
+
+	return {
+		yield = function()
+			return Event.Event:Wait();
+		end	
+	};
+end;
+
+function Compkiller.newNotify()
+	if Compkiller.NOTIFY_CACHE then
+		return Compkiller.NOTIFY_CACHE;
+	end;
+
+	local Notification = Instance.new("ScreenGui")
+	local NotifyContainer = Instance.new("Frame")
+	local UIListLayout = Instance.new("UIListLayout")
+
+	Notification.Name = Compkiller:_RandomString()
+	Notification.Parent = CoreGui
+	Notification.ResetOnSpawn = false
+	Notification.ZIndexBehavior = Enum.ZIndexBehavior.Global
+
+	NotifyContainer.Name = Compkiller:_RandomString()
+	NotifyContainer.Parent = Notification
+	NotifyContainer.AnchorPoint = Vector2.new(1, 0)
+	NotifyContainer.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	NotifyContainer.BackgroundTransparency = 1.000
+	NotifyContainer.BorderColor3 = Color3.fromRGB(0, 0, 0)
+	NotifyContainer.BorderSizePixel = 0
+	NotifyContainer.Position = UDim2.new(1, -10, 0, 1)
+	NotifyContainer.Size = UDim2.new(0, 100, 0, 100)
+
+	UIListLayout.Parent = NotifyContainer
+	UIListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Right
+	UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+	UIListLayout.Padding = UDim.new(0, 3)
+
+	local LayoutREF = 0;
+
+	Compkiller.NOTIFY_CACHE = {
+		new = function(Notify: Notify) : NotifyPayback
+			Notify = Compkiller.__CONFIG(Notify, {
+				Icon = Compkiller.Logo,
+				Title = "Notification",
+				Content = "Content",
+				Duration = 3,
+			});
+
+			LayoutREF -= 5;
+
+			local BlockFrame = Instance.new("Frame")
+			local NotifyFrame = Instance.new("Frame")
+			local UICorner = Instance.new("UICorner")
+			local CompLogo = Instance.new("ImageLabel")
+			local Header = Instance.new("TextLabel")
+			local Body = Instance.new("TextLabel")
+			local TimeLeftFrame = Instance.new("Frame")
+			local UICorner_2 = Instance.new("UICorner")
+			local TimeLeft = Instance.new("Frame")
+			local UICorner_3 = Instance.new("UICorner")
+
+			BlockFrame.Name = Compkiller:_RandomString()
+			BlockFrame.Parent = NotifyContainer
+			BlockFrame.AnchorPoint = Vector2.new(1, 0)
+			BlockFrame.BackgroundColor3 = Color3.fromRGB(22, 24, 29)
+			BlockFrame.BackgroundTransparency = 1.000
+			BlockFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
+			BlockFrame.BorderSizePixel = 0
+			BlockFrame.ClipsDescendants = false
+			BlockFrame.Size = UDim2.new(0, 200, 0, 0)
+			BlockFrame.LayoutOrder = LayoutREF;
+
+			NotifyFrame.Name = Compkiller:_RandomString()
+			NotifyFrame.Parent = BlockFrame
+			NotifyFrame.BackgroundColor3 = Color3.fromRGB(22, 24, 29)
+			NotifyFrame.BackgroundTransparency = 0.100
+			NotifyFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
+			NotifyFrame.BorderSizePixel = 0
+			NotifyFrame.ClipsDescendants = false
+			NotifyFrame.Size = UDim2.new(1, 0, 1, -5)
+			NotifyFrame.ZIndex = 2
+			NotifyFrame.Position = UDim2.new(1,200,0,0)
+
+			UICorner.CornerRadius = UDim.new(0, 4)
+			UICorner.Parent = NotifyFrame
+
+			CompLogo.Name = Compkiller:_RandomString()
+			CompLogo.Parent = NotifyFrame
+			CompLogo.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+			CompLogo.BackgroundTransparency = 1.000
+			CompLogo.BorderColor3 = Color3.fromRGB(0, 0, 0)
+			CompLogo.BorderSizePixel = 0
+			CompLogo.Position = UDim2.new(0, 6, 0, 6)
+			CompLogo.Size = UDim2.new(0, 25, 0, 25)
+			CompLogo.ZIndex = 4
+			CompLogo.Image = Compkiller:_GetIcon(Notify.Icon);
+
+			Header.Name = Compkiller:_RandomString()
+			Header.Parent = NotifyFrame
+			Header.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+			Header.BackgroundTransparency = 1.000
+			Header.BorderColor3 = Color3.fromRGB(0, 0, 0)
+			Header.BorderSizePixel = 0
+			Header.Position = UDim2.new(0, 40, 0, 10)
+			Header.Size = UDim2.new(1, -50, 0, 15)
+			Header.ZIndex = 3
+			Header.Font = Enum.Font.GothamBold
+			Header.Text = Notify.Title
+			Header.TextColor3 = Compkiller.Colors.SwitchColor
+			Header.TextSize = 14.000
+			Header.TextXAlignment = Enum.TextXAlignment.Left
+
+			Body.Name = Compkiller:_RandomString()
+			Body.Parent = NotifyFrame
+			Body.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+			Body.BackgroundTransparency = 1.000
+			Body.BorderColor3 = Color3.fromRGB(0, 0, 0)
+			Body.BorderSizePixel = 0
+			Body.Position = UDim2.new(0, 10, 0, 33)
+			Body.Size = UDim2.new(1, -15, 0, 30)
+			Body.ZIndex = 3
+			Body.Font = Enum.Font.GothamMedium
+			Body.Text = Notify.Content
+			Body.TextColor3 = Compkiller.Colors.SwitchColor
+			Body.TextSize = 12.000
+			Body.TextTransparency = 0.500
+			Body.TextXAlignment = Enum.TextXAlignment.Left
+			Body.TextYAlignment = Enum.TextYAlignment.Top
+
+			TimeLeftFrame.Name = Compkiller:_RandomString()
+			TimeLeftFrame.Parent = NotifyFrame
+			TimeLeftFrame.AnchorPoint = Vector2.new(0, 1)
+			TimeLeftFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+			TimeLeftFrame.BackgroundTransparency = 1.000
+			TimeLeftFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
+			TimeLeftFrame.BorderSizePixel = 0
+			TimeLeftFrame.Position = UDim2.new(0, 0, 1, 1)
+			TimeLeftFrame.Size = UDim2.new(1, 0, 0, 5)
+			TimeLeftFrame.ZIndex = 5
+
+			UICorner_2.CornerRadius = UDim.new(0, 4)
+			UICorner_2.Parent = TimeLeftFrame
+
+			TimeLeft.Name = Compkiller:_RandomString()
+			TimeLeft.Parent = TimeLeftFrame
+			TimeLeft.BackgroundColor3 = Compkiller.Colors.Highlight
+			TimeLeft.BorderColor3 = Color3.fromRGB(0, 0, 0)
+			TimeLeft.BorderSizePixel = 0
+			TimeLeft.Size = UDim2.new(0, 0, 1, 0)
+			TimeLeft.ZIndex = 5
+
+			UICorner_3.CornerRadius = UDim.new(0, 1)
+			UICorner_3.Parent = TimeLeft
+
+			local UpdateText = function()
+				local TitleScale = TextService:GetTextSize(Header.Text,Header.TextSize,Header.Font,Vector2.new(math.huge,math.huge));
+				local BodyScale = TextService:GetTextSize(Body.Text,Body.TextSize,Body.Font,Vector2.new(math.huge,math.huge));
+
+				local MainX = (TitleScale.X >= BodyScale.X and TitleScale.X) or BodyScale.X;
+				local MainY = TitleScale.Y + ((Body.Text:byte() and BodyScale.Y) or 1);
+
+				if BlockFrame:GetAttribute('Already') then
+					Compkiller:_Animation(BlockFrame,TweenInfo.new(0.3),{
+						Size = UDim2.new(0,MainX + 55,0,MainY + 35)
+					});
+				else
+					BlockFrame:SetAttribute('Already',true)
+					BlockFrame.Size = UDim2.new(0, MainX + 45, 0, 0);
+
+					Compkiller:_Animation(BlockFrame,TweenInfo.new(0.3),{
+						Size = UDim2.new(0,MainX + 55,0,MainY + 35)
+					});
+				end;
+			end;
+
+			UpdateText();
+
+			local Close = function()
+				Compkiller:_Animation(NotifyFrame,TweenInfo.new(0.65,Enum.EasingStyle.Quint),{
+					Position = UDim2.new(1,200,0,0)
+				});
+
+				task.wait(0.3);
+
+				Compkiller:_Animation(BlockFrame,TweenInfo.new(0.3),{
+					Size = UDim2.new(1,0,0,0)
+				});
+
+				task.wait(0.35)
+				BlockFrame:Destroy();
+
+			end;
+
+			local Show = function()
+				Compkiller:_Animation(NotifyFrame,TweenInfo.new(0.5,Enum.EasingStyle.Quint),{
+					Position = UDim2.new(0,0,0,0)
+				});
+			end;
+
+			if typeof(Notify.Duration) == 'number' and Notify.Duration ~= math.huge then
+				Compkiller:_Animation(TimeLeft,TweenInfo.new(Notify.Duration + 0.2,Enum.EasingStyle.Linear),{
+					Size = UDim2.new(1, 0, 1, 0)
+				});
+
+				return task.delay(0.25,function()
+					Show();
+
+					task.delay(Notify.Duration + 0.2,Close)
+				end);
+			end;
+
+			Show();
+
+			return {
+				Title = function(self , new)
+					Header.Text = new;
+					UpdateText(); 
+				end,
+
+				Content = function(self , new)
+					Body.Text = new;
+					UpdateText();
+				end,
+
+				SetProgress = function(self , new , Time)
+					if Time and Time <= 0 then
+						TimeLeft.Size = UDim2.new(new, 0, 1, 0);
+
+						UpdateText();
+						return;
+					end;
+
+					if new > 1 then
+						new = (new / 100);	
+					end;
+
+					Compkiller:_Animation(TimeLeft,TweenInfo.new(Time or 0.85,(Time and Enum.EasingStyle.Linear) or Enum.EasingStyle.Quint),{
+						Size = UDim2.new(new, 0, 1, 0)
+					});
+
+					UpdateText();
+				end,
+
+				Close = Close,
+			}
+		end,
+	};
+
+	return Compkiller.NOTIFY_CACHE;
+end;
+
+return Compkiller;
