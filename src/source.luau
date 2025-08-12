@@ -6299,7 +6299,7 @@ function Compkiller.new(Config : Window)
 		SectionText_2.Size = UDim2.new(0, 200, 0, 25)
 		SectionText_2.ZIndex = 10
 		SectionText_2.Font = Enum.Font.GothamMedium
-		SectionText_2.Text = "Add Config"
+		SectionText_2.Text = "Add 添加配置"
 		SectionText_2.TextColor3 = Compkiller.Colors.SwitchColor
 		SectionText_2.TextSize = 14.000
 		SectionText_2.TextTransparency = 0.500
@@ -6359,7 +6359,7 @@ function Compkiller.new(Config : Window)
 		TextBox.ClearTextOnFocus = false
 		TextBox.Font = Enum.Font.GothamMedium
 		TextBox.PlaceholderColor3 = Color3.fromRGB(150, 150, 150)
-		TextBox.PlaceholderText = "Config Name..."
+		TextBox.PlaceholderText = "输入 - 配置名称..."
 		TextBox.Text = ""
 		TextBox.TextColor3 = Compkiller.Colors.SwitchColor
 		TextBox.TextSize = 12.000
@@ -6432,7 +6432,7 @@ function Compkiller.new(Config : Window)
 		TextLabel.Size = UDim2.new(1, 0, 1, 0)
 		TextLabel.ZIndex = 10
 		TextLabel.Font = Enum.Font.GothamMedium
-		TextLabel.Text = "Add Config"
+		TextLabel.Text = "添加配置"
 		TextLabel.TextColor3 = Compkiller.Colors.SwitchColor
 		TextLabel.TextSize = 12.000
 		TextLabel.TextStrokeTransparency = 0.900
